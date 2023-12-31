@@ -15,27 +15,15 @@ namespace thread {
         std::string message;
     };
 
-    enum class thread_state {
-        RUNNING,
-        TERMINATED,
-        EXITED
-    };
-
     class thread {
     public:
-        explicit thread(std::function<int(void*)> action);
+        explicit thread(int (*action)(void *));
 
         ~thread();
 
-        thread_state get_state();
-
-        void join();
-
-        void kill();
+        bool is_running();
     protected:
         pid_t pid;
-
-        thread_state state;
-        int status;
+        bool running;
     };
 }

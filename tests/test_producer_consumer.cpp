@@ -7,7 +7,11 @@ class non_blocking_queue {
 public:
 
     std::optional<int> poll() noexcept {
-        node* head = this->head.load();
+        node* head;
+        do {
+            head = this->head.load();
+        } while (head != nullptr && !this->head.compare_exchange_strong(head, head->next));
+
         if (head == nullptr) {
             return std::nullopt;
         }
@@ -48,11 +52,10 @@ protected:
 };
 
 non_blocking_queue queue;
+int element_count = 100;
 
 int producer(void* ignored) {
-    for (int i = 0; i < 50; i++) {
-        // sleep(1000);
-        printf("[P] producing '%d'\n", i);
+    for (int i = 0; i < element_count; i++) {
         queue.push(i);
     }
 
@@ -62,7 +65,7 @@ int producer(void* ignored) {
 }
 
 int consumer(void* ignored) {
-    while (true) {
+    for (int i = 0; i < element_count; i++) {
         std::optional<int> poll;
         do {
             poll = queue.poll();
@@ -71,6 +74,8 @@ int consumer(void* ignored) {
         printf("[C] consuming '%d'\n", poll.value());
     }
 
+    printf("[C] consumer exited! \n");
+
     return 0;
 }
 
@@ -78,8 +83,8 @@ int main() {
     thread::thread consumer_thread(consumer);
     thread::thread producer_thread(producer);
 
-    while (producer_thread.get_state() == thread::thread_state::RUNNING) {
-        sleep(1000);
-        printf("[M] waiting...\n");
+    while (producer_thread.is_running()) {
+        printf("[M] waiting \n");
+        // sleep(1);
     }
 }
