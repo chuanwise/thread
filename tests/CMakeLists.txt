@@ -1,0 +1,5 @@
+add_executable(test_producer_consumer test_producer_consumer.cpp)
+
+target_link_libraries(test_producer_consumer thread)
+
+add_test(NAME test_producer_consumer COMMAND test_producer_consumer)
