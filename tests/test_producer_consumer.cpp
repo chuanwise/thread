@@ -52,11 +52,12 @@ protected:
 };
 
 non_blocking_queue queue;
-int element_count = 100;
+int element_count = 30;
 
 int producer(void* ignored) {
     for (int i = 0; i < element_count; i++) {
         queue.push(i);
+        printf("[P] procuding %d\n", i);
     }
 
     printf("[P] producer exited! \n");
@@ -71,7 +72,7 @@ int consumer(void* ignored) {
             poll = queue.poll();
         } while (!poll.has_value());
 
-        printf("[C] consuming '%d'\n", poll.value());
+        printf("[C] consuming %d\n", poll.value());
     }
 
     printf("[C] consumer exited! \n");
@@ -85,6 +86,6 @@ int main() {
 
     while (producer_thread.is_running()) {
         printf("[M] waiting \n");
-        // sleep(1);
+        sleep(1);
     }
 }
